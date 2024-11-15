@@ -157,10 +157,9 @@
         }
 
         .appointments-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
+            width: 100%;
+            padding: 1rem 2rem;
+            position: relative;
         }
 
         .add-btn {
@@ -254,48 +253,214 @@
             margin: 0 auto;
         }
 
-        .appointments-header {
+        .date-navigation {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            justify-content: space-between;
+            width: 100%;
+            position: relative;
         }
 
         .date-display {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 1.1rem;
-            color: var(--text-secondary);
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--text);
+            text-align: center;
         }
 
-        .appointments-stats {
-            display: flex;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-pill {
-            background: var(--card-bg);
-            padding: 0.75rem 1.5rem;
-            border-radius: 50px;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .stat-pill i {
+        .date-nav {
+            background: none;
+            border: none;
             color: var(--accent);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0.5rem;
+            z-index: 1;
+            transition: all 0.3s ease;
         }
 
-        .time-slots {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
+        .date-nav:hover {
+            color: var(--text);
         }
+
+        .date-nav.left {
+            margin-left: 25em;  /* Aumenta questo valore per spostare più a sinistra */
+        }
+
+        .date-nav.right {
+            margin-right: 10rem;  /* Aumenta questo valore per spostare più a destra */
+        }
+
+        /* Stile normale per desktop */
+.time-slots {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+/* Media query per mobile */
+@media screen and (max-width: 768px) {
+    /* Reset completo per prevenire overflow */
+    * {
+        max-width: 100vw;
+        box-sizing: border-box;
+    }
+
+    /* Contenitore principale */
+    .container {
+        width: 100vw;
+        padding: 0;
+        margin: 0;
+        overflow-x: hidden;
+    }
+
+    /* Header e navigazione */
+    .appointments-header {
+        width: 100%;
+        padding: 1rem 0;
+    }
+
+    /* Rimuovi freccia sopra 2024 */
+    .date-display::after {
+        display: none;
+    }
+
+    /* Sistema le frecce di navigazione */
+    .date-navigation {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 1rem;
+    }
+
+    .date-nav.left {
+        margin-left: 0.5rem;
+    }
+
+    .date-nav.right {
+        margin-right: 0.5rem;
+    }
+
+    /* Contenuto principale */
+    .main-content {
+        width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* Box appuntamenti */
+    .time-slots {
+        width: 100%;
+        padding: 0 1rem;
+    }
+
+    .appointment-card {
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+
+    /* Forza la larghezza massima su tutti gli elementi */
+    .appointments-section,
+    .time-period,
+    .date-display {
+        max-width: 100%;
+    }
+
+    .time-slots {
+        grid-template-columns: 1fr;  /* Cambia a una singola colonna */
+        gap: 1rem;  /* Riduce lo spazio tra le box */
+    }
+
+    .time-period {
+        margin-bottom: 1rem;  /* Aggiunge spazio tra le sezioni */
+    }
+
+    .appointment-card {
+        margin-bottom: 0.8rem;  /* Riduce leggermente lo spazio tra le card */
+    }
+
+    .appointments-header {
+        padding: 0 1rem;  /* Riduce il padding */
+        margin-top: 10rem;  /* Sposta verso l'alto */
+    }
+
+    .date-navigation {
+        margin-top: 0;  /* Rimuove il margine superiore */
+    }
+
+    h1 {
+        font-size: 1.5rem;  /* Opzionale: riduce la dimensione del titolo su mobile */
+        margin-bottom: 0.5rem;  /* Riduce lo spazio sotto il titolo */
+    }
+
+    /* Sposta le frecce verdi più vicino */
+    .date-nav.left {
+        margin-left: 1rem;  /* Riduce la distanza a sinistra */
+    }
+
+    .date-nav.right {
+        margin-right: 1rem;  /* Riduce la distanza a destra */
+    }
+
+    /* Gestione scroll */
+    body {
+        overflow-x: hidden;
+        width: 100%;
+    }
+
+    .main-content {
+        overflow-y: auto;  /* Permette lo scroll verticale */
+        overflow-x: hidden;  /* Blocca lo scroll orizzontale */
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Rimuovi eventuali proprietà che bloccano lo scroll */
+    .container,
+    .appointments-section,
+    .time-slots {
+        overflow-y: visible;
+        width: 100%;
+    }
+
+    @media screen and (max-width: 768px) {
+        /* Riorganizza il layout della navigazione */
+        .date-navigation {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+            padding: 0 1rem;
+        }
+
+        /* Prima la data */
+        .date-display {
+            order: 1;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Poi le frecce in riga */
+        .date-nav-container {
+            order: 2;
+            display: flex;
+            justify-content: center;
+            gap: 4rem;  /* Spazio tra le frecce */
+            width: 100%;
+        }
+
+        .date-nav.left,
+        .date-nav.right {
+            margin: 0;  /* Rimuove i margini precedenti */
+        }
+    }
+}
 
         .time-period h3 {
             font-family: 'DM Sans', sans-serif;
@@ -1063,7 +1228,7 @@
         }
 
         .date-display {
-            position: relative;
+            position: center;
         }
 
         .date-select {
@@ -1097,6 +1262,47 @@
             color: var(--text);
             padding: 10px;
         }
+
+        @media screen and (max-width: 768px) {
+            /* Nascondi la sidebar in mobile */
+            .sidebar, 
+            .nav-menu {
+                display: none;
+            }
+
+            /* Aggiusta il contenuto principale */
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 0.5rem;
+            }
+
+            /* Aggiusta l'header degli appuntamenti */
+            .appointments-header {
+                margin-top: 1rem;
+                padding: 0 1rem;
+            }
+
+            /* Rimuovi eventuali margini laterali */
+            .container,
+            .section,
+            .appointments-section {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+            }
+
+            /* Assicurati che il contenuto sia a schermo intero */
+            body {
+                overflow-x: hidden;
+                width: 100%;
+            }
+
+            /* Aggiusta la visualizzazione delle box appuntamenti */
+            .time-slots {
+                padding: 0 1rem;
+            }
+        }
     </style>
     <!-- Firebase App -->
     <script type="module">
@@ -1105,7 +1311,6 @@
 
         async function loadDashboardAppointments(selectedDate = null) {
             try {
-                console.log('Inizio caricamento appuntamenti...');
                 
                 // Formatta la data nel formato italiano
                 let searchDate;
@@ -1121,14 +1326,12 @@
                 
                 // Formatta la data come "Sabato 16 novembre 2024"
                 const dateString = `${giorni[searchDate.getDay()]} ${searchDate.getDate()} ${mesi[searchDate.getMonth()]} ${searchDate.getFullYear()}`;
-                console.log('Data ricerca:', dateString);
 
                 // Query al database
                 const bookingsRef = collection(db, 'bookings');
                 const q = query(bookingsRef, where('date', '==', dateString));
                 const snapshot = await getDocs(q);
                 
-                console.log('Query eseguita, documenti trovati:', snapshot.size);
 
                 const morningContainer = document.getElementById('morningAppointments');
                 const afternoonContainer = document.getElementById('afternoonAppointments');
@@ -1138,8 +1341,6 @@
 
                 snapshot.forEach(doc => {
                     const booking = doc.data();
-                    console.log('Processando appuntamento:', booking);
-
                     const appointmentHTML = `
                         <div class="appointment-card">
                             <div class="time">
@@ -1250,23 +1451,18 @@
                 </div>
                 
                 <!-- Aggiungi il selettore di data -->
-                <div class="date-navigation">
-                    <button class="date-nav left" onclick="changeDate(-1)">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    
-                    <div class="date-display">
-                        <input type="date" id="datePicker" class="date-picker" onchange="handleDatePicker(this.value)">
-                        <select class="date-select" onchange="handleDateSelection(this.value)">
-                            <option value="today">Oggi</option>
-                            <option value="tomorrow">Domani</option>
-                            <option value="custom">Scegli data...</option>
-                        </select>
+                <div class="appointments-header">
+                    <div class="date-navigation">
+                        <button class="date-nav left" onclick="changeDate(-1)">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        
+                        <div class="date-display" id="currentDateDisplay"></div>
+                        
+                        <button class="date-nav right" onclick="changeDate(1)">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
-                    
-                    <button class="date-nav right" onclick="changeDate(1)">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
                 </div>
 
                 <div class="time-slots">
@@ -2224,14 +2420,12 @@
                          'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
             
             const dateString = `${giorni[searchDate.getDay()]} ${searchDate.getDate()} ${mesi[searchDate.getMonth()]} ${searchDate.getFullYear()}`;
-            console.log('Data ricerca:', dateString);
 
             // Query al database
             const bookingsRef = collection(db, 'bookings');
             const q = query(bookingsRef, where('date', '==', dateString));
             const snapshot = await getDocs(q);
             
-            console.log('Query eseguita, documenti trovati:', snapshot.size);
 
             // Recupera i container
             const morningContainer = document.getElementById('morningAppointments');
@@ -2248,7 +2442,6 @@
             // Processa i risultati
             snapshot.forEach(doc => {
                 const booking = doc.data();
-                console.log('Processando appuntamento:', booking);
 
                 const appointmentHTML = `
                     <div class="appointment-card" data-id="${doc.id}">
@@ -2297,28 +2490,24 @@
     // Funzione per cambiare data con le frecce
     function changeDate(direction) {
         try {
-            // Ottieni la data corrente dal database o usa oggi come default
-            let currentDate = new Date();
-            const select = document.querySelector('.date-select-btn');
+            // Aggiorna la data corrente
+            currentDisplayDate.setDate(currentDisplayDate.getDate() + direction);
             
-            // Aggiungi o sottrai giorni
-            currentDate.setDate(currentDate.getDate() + direction);
-            
-            // Aggiorna la select a "Oggi" se la data è oggi, "Domani" se è domani
+            // Controlla se siamo al giorno corrente e aggiorna la visibilità della freccia sinistra
             const today = new Date();
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
+            today.setHours(0, 0, 0, 0);
+            currentDisplayDate.setHours(0, 0, 0, 0);
             
-            if (currentDate.toDateString() === today.toDateString()) {
-                select.value = 'today';
-            } else if (currentDate.toDateString() === tomorrow.toDateString()) {
-                select.value = 'tomorrow';
-            } else {
-                select.value = 'custom';
+            const leftArrow = document.querySelector('.date-nav.left');
+            if (leftArrow) {
+                leftArrow.style.visibility = currentDisplayDate <= today ? 'hidden' : 'visible';
             }
+
+            // Aggiorna il display della data
+            updateDateDisplay(currentDisplayDate);
             
-            updateDateDisplay(currentDate);
-            loadDashboardAppointments(currentDate);
+            // Carica gli appuntamenti per la nuova data
+            loadDashboardAppointments(currentDisplayDate);
             
         } catch (error) {
             console.error('Errore nel cambio data:', error);
@@ -2379,68 +2568,44 @@
         
         const dateString = `${giorni[date.getDay()]} ${date.getDate()} ${mesi[date.getMonth()]} ${date.getFullYear()}`;
         
-        const select = document.querySelector('.date-select-btn');
-        if (select) {
-            // Trova l'opzione corrente e aggiorna il suo testo
-            const currentOption = select.options[select.selectedIndex];
-            if (currentOption.value === 'today') {
-                currentOption.text = 'Oggi';
-            } else if (currentOption.value === 'tomorrow') {
-                currentOption.text = 'Domani';
-            } else {
-                currentOption.text = dateString;
-            }
+        const dateDisplay = document.getElementById('currentDateDisplay');
+        if (dateDisplay) {
+            dateDisplay.textContent = dateString;
         }
     }
 
     // Inizializza la data all'avvio
     document.addEventListener('DOMContentLoaded', () => {
-        const today = new Date();
-        updateDateDisplay(today);
-        loadDashboardAppointments(today);
+        updateDateDisplay(currentDisplayDate);
+        loadDashboardAppointments(currentDisplayDate);
+        initializeDateArrows();
     });
 
     let currentDisplayDate = new Date();
 
-    function changeDate(direction) {
-        try {
-            // Aggiorna la data corrente
-            currentDisplayDate.setDate(currentDisplayDate.getDate() + direction);
-            
-            // Formatta la data
-            const giorni = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
-            const mesi = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 
-                         'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
-            
-            const dateString = `${giorni[currentDisplayDate.getDay()]} ${currentDisplayDate.getDate()} ${mesi[currentDisplayDate.getMonth()]} ${currentDisplayDate.getFullYear()}`;
-            
-            // Aggiorna la select
-            const select = document.querySelector('.date-select');
-            if (select) {
-                const today = new Date();
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                
-                if (currentDisplayDate.toDateString() === today.toDateString()) {
-                    select.value = 'today';
-                } else if (currentDisplayDate.toDateString() === tomorrow.toDateString()) {
-                    select.value = 'tomorrow';
-                } else {
-                    select.value = 'custom';
-                    const customOption = select.querySelector('option[value="custom"]');
-                    if (customOption) {
-                        customOption.text = dateString;
-                    }
-                }
-            }
-            
-            loadDashboardAppointments(currentDisplayDate);
-            
-        } catch (error) {
-            console.error('Errore nel cambio data:', error);
+    // Aggiungi questa funzione per inizializzare lo stato della freccia all'avvio
+    function initializeDateArrows() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        currentDisplayDate.setHours(0, 0, 0, 0);
+        
+        const leftArrow = document.querySelector('.date-nav.left');
+        if (leftArrow) {
+            leftArrow.style.visibility = currentDisplayDate <= today ? 'hidden' : 'visible';
         }
     }
 
+    // Modifica l'event listener del DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', () => {
+        const select = document.querySelector('.date-select');
+        if (select) {
+            select.value = 'today';
+        }
+        loadDashboardAppointments(currentDisplayDate);
+        initializeDateArrows(); // Aggiungi questa chiamata
+    });
+
+    // Aggiorna anche handleDateSelection per gestire la visibilità della freccia
     function handleDateSelection(value) {
         try {
             switch(value) {
@@ -2469,21 +2634,14 @@
                     return;
             }
             
-            changeDate(0); // Aggiorna il display senza cambiare data
+            // Aggiorna la visibilità della freccia dopo il cambio data
+            initializeDateArrows();
+            changeDate(0);
             
         } catch (error) {
             console.error('Errore nella selezione della data:', error);
         }
     }
-
-    // Inizializzazione
-    document.addEventListener('DOMContentLoaded', () => {
-        const select = document.querySelector('.date-select');
-        if (select) {
-            select.value = 'today';
-        }
-        loadDashboardAppointments(currentDisplayDate);
-    });
     </script>
 </body>
 </html>

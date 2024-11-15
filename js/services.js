@@ -66,7 +66,6 @@ function isServiceSelected() {
 function showServiceSelectionPopup() {
     if (isPopupActive) return;
     
-    console.log('Mostrando popup - Nessun servizio selezionato');
     isPopupActive = true;
     
     const popup = document.createElement('div');
@@ -85,7 +84,6 @@ function showServiceSelectionPopup() {
     // Gestione chiusura
     const closeBtn = popup.querySelector('.close-popup');
     closeBtn.addEventListener('click', () => {
-        console.log('Chiusura popup');
         popup.classList.remove('show');
         setTimeout(() => {
             popup.remove();
@@ -107,15 +105,12 @@ function handleStep1Navigation(event) {
     event.preventDefault();
     event.stopPropagation();
     
-    console.log('Tentativo di navigazione allo step 2');
     
     // Verifica se un servizio è selezionato
     const selectedService = document.querySelector('.service-card.selected');
-    console.log('Servizio selezionato:', selectedService ? true : false);
     
     if (!selectedService) {
-        console.log('Nessun servizio selezionato, mostro popup');
-        showServiceSelectionPopup();
+           showServiceSelectionPopup();
         // Importante: blocca qui l'esecuzione
         return false;
     }
@@ -136,7 +131,6 @@ function handleStep1Navigation(event) {
 
 // Inizializzazione
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Inizializzazione gestione step 1');
     
     // Rimuovi tutti i listener esistenti dal pulsante Avanti
     const step1NextBtn = document.querySelector('#step1 .next-step');
@@ -351,7 +345,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.classList.contains('time-slot') && 
             !e.target.classList.contains('disabled')) {
             
-            console.log('Click su slot orario');
             
             // Rimuovi selezione precedente
             document.querySelectorAll('.time-slot').forEach(slot => {
@@ -365,7 +358,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Salva l'orario
             const selectedTime = e.target.textContent.trim();
-            console.log('Orario salvato:', selectedTime);
             localStorage.setItem('selectedTime', selectedTime);
         }
     });
@@ -540,13 +532,8 @@ function isDateTimeSelected() {
     const selectedTime = localStorage.getItem('selectedTime');
     const dateSelected = document.querySelector('.calendar-day.selected');
     const timeSelected = document.querySelector('.time-slot.selected');
-    
-    console.log('Verifica selezioni:');
-    console.log('Data in localStorage:', selectedDate);
-    console.log('Ora in localStorage:', selectedTime);
-    console.log('Data selezionata DOM:', dateSelected);
-    console.log('Ora selezionata DOM:', timeSelected);
-    
+
+   
     return selectedDate && selectedTime && dateSelected && timeSelected;
 }
 

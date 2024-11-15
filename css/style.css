@@ -393,15 +393,15 @@ section {
     padding: 25px 20px;
     border-radius: 18px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out;  /* Ridotto da 0.3s a 0.2s */
     border: 2px solid #edf2f7;
     text-align: center;
     position: relative;
 }
 
 .service-card:hover {
+    transform: translateY(-5px) scale(1.02);  /* Ridotto da -10px a -5px e scale da 1.05 a 1.02 */
     border-color: var(--primary);
-    transform: translateY(-2px);
 }
 
 .service-icon {
@@ -598,7 +598,7 @@ section {
     padding: 25px 20px;
     border-radius: 18px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out;  /* Ridotto da 0.3s a 0.2s */
     border: 2px solid #edf2f7;
     text-align: center;
     position: relative;
@@ -618,8 +618,8 @@ section {
 }
 
 .service-card:hover {
+    transform: translateY(-5px) scale(1.02);  /* Ridotto da -10px a -5px e scale da 1.05 a 1.02 */
     border-color: var(--primary);
-    transform: translateY(-2px);
 }
 
 .service-card:hover::before {
@@ -1132,13 +1132,14 @@ section {
     background: white;
     border: 2px solid #e5e7eb;
     color: #64748b;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;  /* Ridotto da 0.3s a 0.2s */
 }
 
 .prev-step:hover {
     background: #f8f9fa;
     border-color: #cbd5e1;
-    transform: translateY(-1px);
+    transform: translateY(-1px);  /* Ridotto da -2px a -1px */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);  /* Ridotta l'ombra */
 }
 
 .next-step {
@@ -1440,16 +1441,16 @@ input:not(:placeholder-shown):invalid {
     background-color: #4CAF50;
     color: white;
     border-radius: 8px;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;  /* Ridotto da 0.3s a 0.2s */
     border: none;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Hover sugli slot attivi */
 .time-slot:hover:not(.disabled) {
+    transform: translateY(-2px) scale(1.01);  /* Ridotto da -3px a -2px e aggiunto scale minimo */
+    box-shadow: 0 2px 4px rgba(44, 62, 80, 0.1);  /* Ridotta l'ombra */
     background-color: #45a049;
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(44, 62, 80, 0.2);
 }
 
 /* Slot selezionato */
@@ -2320,16 +2321,16 @@ html {
         background-color: #4a5568; /* Grigio blu scuro */
         color: white;
         border-radius: 8px; /* Bordo leggermente più arrotondato */
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;  /* Ridotto da 0.3s a 0.2s */
         border: none; /* Rimuoviamo il bordo predefinito */
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Aggiungiamo una leggera ombra invece del bordo */
     }
 
     /* Hover sugli slot attivi */
     .time-slot:hover:not(.disabled) {
+        transform: translateY(-2px) scale(1.01);  /* Ridotto da -3px a -2px e aggiunto scale minimo */
+        box-shadow: 0 2px 4px rgba(44, 62, 80, 0.1);  /* Ridotta l'ombra */
         background-color: #2d3748; /* Grigio blu più scuro */
-        transform: translateY(-2px);
-        box-shadow: 0 2px 8px rgba(44, 62, 80, 0.2);
     }
 
     /* Slot selezionato */
@@ -3071,4 +3072,40 @@ section,
 #rememberMe + label {
     color: #FF4D4D;
     font-size: 0.9rem;
+}
+
+@media screen and (max-width: 768px) {
+    /* Contenitore principale */
+    .clients-section {
+        width: 100%;
+        max-width: 100vw;
+        overflow: hidden;
+        box-sizing: border-box;
+        padding: 0;
+    }
+
+    /* Header e contenuto */
+    .section-header,
+    .clients-content,
+    .clients-list {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 1rem;
+        box-sizing: border-box;
+    }
+
+    /* Rimuovi padding/margin extra */
+    .clients-container {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    /* Forza il contenimento */
+    * {
+        max-width: 100vw;
+        overflow-x: hidden;
+    }
 }
