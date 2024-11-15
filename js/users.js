@@ -22,7 +22,6 @@ export const userService = {
 
             return user;
         } catch (error) {
-            console.error('Errore nella registrazione:', error);
             throw error;
         }
     },
@@ -36,7 +35,6 @@ export const userService = {
             }
             return null;
         } catch (error) {
-            console.error('Errore nel recupero del ruolo:', error);
             throw error;
         }
     },
@@ -49,7 +47,6 @@ export const userService = {
             }, { merge: true });
             return true;
         } catch (error) {
-            console.error('Errore nell\'aggiornamento del ruolo:', error);
             throw error;
         }
     }

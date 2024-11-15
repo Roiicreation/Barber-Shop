@@ -13,6 +13,12 @@ import { db } from './firebase-config.js';
 let currentStep = 1;
 const totalSteps = 3;
 
+// Variabile per tracciare lo stato del popup
+let isPopupActive = false;
+
+// Variabili di stato globali
+let isNavigating = false;
+
 // Definisci showStep come funzione globale
 function showStep(stepNumber) {
     // Nascondi tutti gli step
@@ -51,6 +57,105 @@ function updateSummary() {
     }
 }
 
+// Funzione per controllare se un servizio è selezionato
+function isServiceSelected() {
+    return document.querySelector('.service-card.selected') !== null;
+}
+
+// Funzione centralizzata per mostrare il popup
+function showServiceSelectionPopup() {
+    if (isPopupActive) return;
+    
+    console.log('Mostrando popup - Nessun servizio selezionato');
+    isPopupActive = true;
+    
+    const popup = document.createElement('div');
+    popup.className = 'service-selection-popup';
+    popup.innerHTML = `
+        <div class="popup-content">
+            <i class="fas fa-exclamation-circle"></i>
+            <h3>Seleziona un servizio</h3>
+            <p>Devi selezionare almeno un servizio per continuare.</p>
+            <button class="close-popup">OK</button>
+        </div>
+    `;
+    
+    document.body.appendChild(popup);
+    
+    // Gestione chiusura
+    const closeBtn = popup.querySelector('.close-popup');
+    closeBtn.addEventListener('click', () => {
+        console.log('Chiusura popup');
+        popup.classList.remove('show');
+        setTimeout(() => {
+            popup.remove();
+            isPopupActive = false;
+        }, 300);
+    });
+    
+    setTimeout(() => popup.classList.add('show'), 10);
+}
+
+// Funzione per procedere allo step 2
+function proceedToStep2() {
+    document.getElementById('step1').style.display = 'none';
+    document.getElementById('step2').style.display = 'block';
+}
+
+// Funzione principale di navigazione
+function handleStep1Navigation(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    console.log('Tentativo di navigazione allo step 2');
+    
+    // Verifica se un servizio è selezionato
+    const selectedService = document.querySelector('.service-card.selected');
+    console.log('Servizio selezionato:', selectedService ? true : false);
+    
+    if (!selectedService) {
+        console.log('Nessun servizio selezionato, mostro popup');
+        showServiceSelectionPopup();
+        // Importante: blocca qui l'esecuzione
+        return false;
+    }
+    
+    // Se arriviamo qui, un servizio è stato selezionato
+    localStorage.setItem('selectedService', selectedService.dataset.service);
+    
+    // Rimuovi eventuali popup attivi
+    const existingPopup = document.querySelector('.service-selection-popup');
+    if (existingPopup) {
+        existingPopup.remove();
+    }
+    
+    // Procedi allo step 2 solo se c'è un servizio selezionato
+    document.getElementById('step1').style.display = 'none';
+    document.getElementById('step2').style.display = 'block';
+}
+
+// Inizializzazione
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Inizializzazione gestione step 1');
+    
+    // Rimuovi tutti i listener esistenti dal pulsante Avanti
+    const step1NextBtn = document.querySelector('#step1 .next-step');
+    if (step1NextBtn) {
+        // Rimuovi qualsiasi onclick inline
+        step1NextBtn.removeAttribute('onclick');
+        
+        // Rimuovi tutti i vecchi listener clonando il pulsante
+        const newBtn = step1NextBtn.cloneNode(true);
+        step1NextBtn.parentNode.replaceChild(newBtn, step1NextBtn);
+        
+        // Aggiungi il nuovo listener
+        newBtn.addEventListener('click', handleStep1Navigation);
+    }
+    
+    // Rimuovi eventuali popup residui all'avvio
+    document.querySelectorAll('.service-selection-popup').forEach(popup => popup.remove());
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     // Elementi DOM
     const step1 = document.getElementById('step1');
@@ -88,32 +193,16 @@ document.addEventListener('DOMContentLoaded', function() {
         nextButton.addEventListener('click', function(e) {
             e.preventDefault();
             
-            const step1 = document.getElementById('step1');
-            const step2 = document.getElementById('step2');
-         
-           
-            if (step1 && step2) {
-                // Rimuovi tutte le classi e stili esistenti
-                step1.className = 'form-step';
-                step2.className = 'form-step';
-                
-                // Rimuovi gli stili inline
-                step1.removeAttribute('style');
-                step2.removeAttribute('style');
-                
-                // Applica i nuovi stili e classi
-                setTimeout(() => {
-                    step1.style.display = 'none';
-                    step2.style.display = 'block';
-                    step2.classList.add('active');
-                }, 0);
-                
-                // Aggiorna anche i dot di progresso se presenti
-                const dots = document.querySelectorAll('.step-dot');
-                dots.forEach((dot, index) => {
-                    if (index === 1) dot.classList.add('active');
-                });
+            // Controlla se è stato selezionato un servizio
+            const selectedService = document.querySelector('.service-card.selected');
+            if (!selectedService) {
+                showServiceSelectionPopup();
+                return;
             }
+            
+            // Se un servizio è selezionato, procedi normalmente
+            currentStep++;
+            updateSteps();
         });
     } else {
     }
@@ -228,43 +317,57 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Gestione selezione data
-    const calendarDays = document.querySelectorAll('.calendar-day');
-    calendarDays.forEach(day => {
-        day.addEventListener('click', async function() {
-            if (!this.classList.contains('disabled')) {
-                // Rimuovi la selezione precedente
-                document.querySelectorAll('.calendar-day').forEach(d => 
-                    d.classList.remove('selected'));
+    // Gestione selezione data (un solo event listener)
+    const calendar = document.querySelector('.calendar');
+    if (calendar) {
+        calendar.addEventListener('click', async function(e) {
+            if (e.target.classList.contains('calendar-day') && 
+                !e.target.classList.contains('disabled') && 
+                !e.target.classList.contains('empty')) {
                 
-                // Seleziona il nuovo giorno
-                this.classList.add('selected');
+                const selectedDay = parseInt(e.target.textContent);
+                const monthYear = document.querySelector('.calendar-title').textContent;
+                const [month, year] = monthYear.split(' ');
                 
-                // Salva la data selezionata
-                const selectedDate = this.getAttribute('data-date');
-                localStorage.setItem('selectedDate', selectedDate);
+                // Array per la conversione del mese
+                const months = {
+                    'gennaio': 0, 'febbraio': 1, 'marzo': 2, 'aprile': 3,
+                    'maggio': 4, 'giugno': 5, 'luglio': 6, 'agosto': 7,
+                    'settembre': 8, 'ottobre': 9, 'novembre': 10, 'dicembre': 11
+                };
                 
-                // Aggiorna gli slot temporali disponibili
-                await updateTimeSlots(selectedDate);
+                const date = new Date(parseInt(year), months[month], selectedDay);
+                const weekDays = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+                const formattedDate = `${weekDays[date.getDay()]} ${selectedDay} ${month} ${year}`;
+                
+                localStorage.setItem('selectedDate', formattedDate);
+                await updateTimeSlots(formattedDate);
             }
         });
-    });
+    }
 
     // Gestione selezione orario
-    document.querySelectorAll('.time-slot').forEach(slot => {
-        slot.addEventListener('click', function() {
-            if (!this.classList.contains('disabled')) {
-                // Rimuovi la selezione precedente
-                document.querySelectorAll('.time-slot').forEach(s => 
-                    s.classList.remove('selected'));
-                
-                // Seleziona il nuovo orario
-                this.classList.add('selected');
-                
-                // Salva l'orario selezionato
-                localStorage.setItem('selectedTime', this.textContent.trim());
-            }
-        });
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('time-slot') && 
+            !e.target.classList.contains('disabled')) {
+            
+            console.log('Click su slot orario');
+            
+            // Rimuovi selezione precedente
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('selected');
+                slot.style.backgroundColor = slot.classList.contains('disabled') ? '#e8b4b4' : '#4CAF50';
+            });
+            
+            // Aggiungi nuova selezione
+            e.target.classList.add('selected');
+            e.target.style.backgroundColor = '#1a365d';
+            
+            // Salva l'orario
+            const selectedTime = e.target.textContent.trim();
+            console.log('Orario salvato:', selectedTime);
+            localStorage.setItem('selectedTime', selectedTime);
+        }
     });
 });
 
@@ -306,13 +409,12 @@ function validatePhoneInput(input) {
     }
 }
 
-// Funzione per ottenere le prenotazioni esistenti per una data specifica
+// Funzione per ottenere le prenotazioni esistenti
 async function getBookedSlots(selectedDate) {
     try {
         const db = getFirestore();
         const bookingsRef = collection(db, 'bookings');
         
-        // Query per ottenere tutte le prenotazioni per la data selezionata
         const q = query(
             bookingsRef,
             where("date", "==", selectedDate)
@@ -320,7 +422,6 @@ async function getBookedSlots(selectedDate) {
         
         const querySnapshot = await getDocs(q);
         const bookedTimes = [];
-        
         querySnapshot.forEach((doc) => {
             const booking = doc.data();
             bookedTimes.push(booking.time);
@@ -333,37 +434,336 @@ async function getBookedSlots(selectedDate) {
     }
 }
 
-// Funzione per aggiornare gli slot temporali disponibili
-async function updateTimeSlots(selectedDate) {
+// Modifica la funzione updateTimeSlots per gestire correttamente gli slot
+export async function updateTimeSlots(selectedDate) {
     try {
+        const timeSlots = document.querySelectorAll('.time-slot');
+        const timeSlotsContainer = document.querySelector('.time-slots-container');
+        
+        if (!selectedDate) {
+            timeSlots.forEach(slot => {
+                slot.style.backgroundColor = '#e9ecef';
+                slot.style.color = '#a0aec0';
+                slot.classList.add('disabled');
+                slot.style.cursor = 'not-allowed';
+                slot.classList.remove('selected');
+            });
+            return;
+        }
+
         // Ottieni gli slot già prenotati
         const bookedSlots = await getBookedSlots(selectedDate);
-        
-        // Seleziona tutti gli slot temporali
-        const timeSlots = document.querySelectorAll('.time-slot');
         
         timeSlots.forEach(slot => {
             const slotTime = slot.textContent.trim();
             
             if (bookedSlots.includes(slotTime)) {
-                // Disabilita lo slot se è già prenotato
+                slot.style.backgroundColor = '#e8b4b4';
+                slot.style.color = '#4a5568';
                 slot.classList.add('disabled');
                 slot.classList.remove('selected');
-                slot.setAttribute('disabled', 'disabled');
                 slot.style.cursor = 'not-allowed';
-                slot.style.backgroundColor = '#f0f0f0';
-                slot.style.color = '#999';
             } else {
-                // Abilita lo slot se è disponibile
+                slot.style.backgroundColor = '#4CAF50';
+                slot.style.color = 'white';
                 slot.classList.remove('disabled');
-                slot.removeAttribute('disabled');
                 slot.style.cursor = 'pointer';
-                slot.style.backgroundColor = '';
-                slot.style.color = '';
+                
+                // Rimuovi l'onclick esistente e usa l'event listener globale
+                slot.removeAttribute('onclick');
             }
         });
     } catch (error) {
         console.error('Errore nell\'aggiornamento degli slot temporali:', error);
     }
 }
+
+// Aggiungi questa funzione per inizializzare gli slot temporali all'avvio
+document.addEventListener('DOMContentLoaded', () => {
+    updateTimeSlots(null); // Passa null per disabilitare tutti gli slot all'inizio
+});
+
+function showErrorMessage(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-popup';
+    errorDiv.innerHTML = `
+        <div class="error-content">
+            <i class="fas fa-exclamation-circle"></i>
+            <p>${message}</p>
+        </div>
+    `;
+    document.body.appendChild(errorDiv);
+    setTimeout(() => errorDiv.remove(), 3000);
+}
+
+// Modifica la gestione del click sul pulsante "Avanti"
+document.addEventListener('DOMContentLoaded', function() {
+    const nextButton = document.querySelector('#step1 .next-step');
+    if (nextButton) {
+        // Rimuovi eventuali listener esistenti
+        const newBtn = nextButton.cloneNode(true);
+        nextButton.parentNode.replaceChild(newBtn, nextButton);
+        
+        // Aggiungi un unico event listener
+        newBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Verifica semplice e diretta
+            const selectedService = document.querySelector('.service-card.selected');
+            
+            if (!selectedService) {
+                showServiceSelectionPopup();
+                return false;
+            }
+            
+            // Salva il nome del servizio, non il dataset
+            const serviceName = selectedService.querySelector('.service-name').textContent.trim();
+            localStorage.setItem('selectedService', serviceName);
+            
+            // Rimuovi eventuali popup attivi
+            const existingPopup = document.querySelector('.service-selection-popup');
+            if (existingPopup) {
+                existingPopup.remove();
+            }
+            
+            // Procedi allo step 2
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').style.display = 'block';
+        });
+    }
+});
+
+// Funzione per verificare se data e ora sono selezionate
+function isDateTimeSelected() {
+    const selectedDate = localStorage.getItem('selectedDate');
+    const selectedTime = localStorage.getItem('selectedTime');
+    const dateSelected = document.querySelector('.calendar-day.selected');
+    const timeSelected = document.querySelector('.time-slot.selected');
+    
+    console.log('Verifica selezioni:');
+    console.log('Data in localStorage:', selectedDate);
+    console.log('Ora in localStorage:', selectedTime);
+    console.log('Data selezionata DOM:', dateSelected);
+    console.log('Ora selezionata DOM:', timeSelected);
+    
+    return selectedDate && selectedTime && dateSelected && timeSelected;
+}
+
+// Gestione del pulsante "Avanti" dello step 2
+document.addEventListener('DOMContentLoaded', function() {
+    // Rimuovi l'avviso esistente se presente
+    const existingTooltip = document.querySelector('.selection-info-tooltip');
+    if (existingTooltip) {
+        existingTooltip.remove();
+    }
+    
+    // Resto del codice per la gestione del pulsante Avanti
+    const step2NextBtn = document.querySelector('#step2 .next-step');
+    if (step2NextBtn) {
+        step2NextBtn.style.display = 'none';
+        
+        function updateUI() {
+            const dateSelected = document.querySelector('.calendar-day.selected');
+            const timeSelected = document.querySelector('.time-slot.selected');
+            
+            if (dateSelected && timeSelected) {
+                step2NextBtn.style.display = 'block';
+            } else {
+                step2NextBtn.style.display = 'none';
+            }
+        }
+        
+        updateUI();
+        
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('calendar-day') || 
+                e.target.classList.contains('time-slot')) {
+                setTimeout(updateUI, 100);
+            }
+        });
+    }
+});
+
+// Funzione per mostrare il popup di conferma con countdown
+function showConfirmationPopup() {
+    return new Promise((resolve) => {
+        const popup = document.createElement('div');
+        popup.className = 'confirmation-popup';
+        popup.innerHTML = `
+            <div class="popup-content">
+                <i class="fas fa-check-circle"></i>
+                <h3>Prenotazione Confermata!</h3>
+                <p>La tua prenotazione è stata registrata con successo.</p>
+                <button class="close-popup">OK (<span class="countdown">5</span>)</button>
+            </div>
+        `;
+        
+        document.body.appendChild(popup);
+        setTimeout(() => popup.classList.add('show'), 10);
+        
+        // Gestione countdown e reindirizzamento
+        const countdownElement = popup.querySelector('.countdown');
+        let secondsLeft = 5;
+        
+        const countdownInterval = setInterval(() => {
+            secondsLeft--;
+            if (countdownElement) {
+                countdownElement.textContent = secondsLeft;
+            }
+            
+            if (secondsLeft <= 0) {
+                clearInterval(countdownInterval);
+                popup.classList.remove('show');
+                setTimeout(() => {
+                    popup.remove();
+                    resolve();
+                }, 300);
+            }
+        }, 1000);
+        
+        // Gestione click manuale sul pulsante
+        popup.querySelector('.close-popup').addEventListener('click', () => {
+            clearInterval(countdownInterval);
+            popup.classList.remove('show');
+            setTimeout(() => {
+                popup.remove();
+                resolve();
+            }, 300);
+        });
+    });
+}
+
+// Modifica la funzione validateForm esistente
+function validateForm() {
+    const nameInput = document.getElementById('booking-name');
+    const phoneInput = document.getElementById('booking-phone');
+    
+    if (!nameInput || !phoneInput) {
+        console.error('Campi del form non trovati');
+        return false;
+    }
+    
+    let isValid = true;
+    
+    // Valida Nome e Cognome
+    if (!nameInput.value.trim() || !phoneInput.value.trim()) {
+        showValidationPopup();
+        isValid = false;
+        return isValid;
+    }
+    
+    // Continua con le altre validazioni esistenti
+    if (nameInput.value.trim().length < 3) {
+        showFieldError(nameInput, 'Inserisci nome e cognome validi');
+        isValid = false;
+    }
+    
+    if (!isValidPhoneNumber(phoneInput.value.trim())) {
+        showFieldError(phoneInput, 'Inserisci un numero di telefono valido');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+// Aggiungi la funzione per il popup di validazione
+function showValidationPopup() {
+    const popup = document.createElement('div');
+    popup.className = 'validation-popup';
+    popup.innerHTML = `
+        <div class="popup-content">
+            <i class="fas fa-exclamation-circle"></i>
+            <h3>Attenzione!</h3>
+            <p>Per favore compila tutti i campi obbligatori.</p>
+            <button class="close-popup">Chiudi</button>
+        </div>
+    `;
+    
+    document.body.appendChild(popup);
+    
+    // Mostra il popup con animazione
+    setTimeout(() => popup.classList.add('show'), 10);
+    
+    // Gestione chiusura
+    const closeBtn = popup.querySelector('.close-popup');
+    closeBtn.addEventListener('click', () => {
+        popup.classList.remove('show');
+        setTimeout(() => popup.remove(), 300);
+    });
+}
+
+// Funzione per mostrare errori sotto i campi
+function showFieldError(inputElement, message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.style.color = '#dc3545';
+    errorDiv.style.fontSize = '14px';
+    errorDiv.style.marginTop = '5px';
+    errorDiv.textContent = message;
+    
+    inputElement.style.borderColor = '#dc3545';
+    inputElement.parentNode.appendChild(errorDiv);
+}
+
+// Funzione per validare il formato del numero di telefono
+function isValidPhoneNumber(phone) {
+    // Accetta numeri di telefono italiani (fissi e mobili)
+    const phoneRegex = /^(\+39)?[0-9]{9,10}$/;
+    return phoneRegex.test(phone.replace(/\s/g, ''));
+}
+
+// Modifica la gestione della conferma prenotazione
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmButton = document.querySelector('#step3 .confirm-booking');
+    if (confirmButton) {
+        confirmButton.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            // Valida il form prima di procedere
+            if (!validateForm()) {
+                return;
+            }
+            
+            try {
+                const nameInput = document.getElementById('booking-name');
+                const phoneInput = document.getElementById('booking-phone');
+                
+                // Crea l'oggetto prenotazione
+                const bookingData = {
+                    name: nameInput.value.trim(),
+                    phone: phoneInput.value.trim(),
+                    date: localStorage.getItem('selectedDate'),
+                    time: localStorage.getItem('selectedTime'),
+                    service: localStorage.getItem('selectedService'),
+                    createdAt: new Date().toISOString()
+                };
+                
+                // Salva la prenotazione
+                await saveBooking(bookingData);
+                
+                // Mostra il popup e poi reindirizza
+                await showConfirmationPopup();
+                window.location.href = '/';
+                
+            } catch (error) {
+                console.error('Errore durante il salvataggio:', error);
+                showErrorMessage('Si è verificato un errore durante la prenotazione. Riprova.');
+            }
+        });
+    }
+
+    // Aggiorna anche qui gli ID per gli event listener
+    const inputs = document.querySelectorAll('#booking-name, #booking-phone');
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            this.style.borderColor = '';
+            const errorMessage = this.parentNode.querySelector('.error-message');
+            if (errorMessage) {
+                errorMessage.remove();
+            }
+        });
+    });
+});
+
 

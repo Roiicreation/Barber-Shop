@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barbiere Dashboard</title>
+    <link rel="icon" type="image/png" href="assets/imges/logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -11,7 +12,7 @@
             --bg-color: #000000;
             --card-bg: #111111;
             --accent: #FF4D4D;
-            --text: #ffffff;
+            --text: #FF4D4D;
             --text-secondary: #888888;
             --success: #00ff88;
         }
@@ -962,36 +963,248 @@
             }
         }
 
-        .home-btn {
+        .site-link {
             margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.2rem;
+            background: var(--accent);
+            color: var(--bg-color);
+            border-radius: 8px;
             text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .site-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 77, 77, 0.2);
+            opacity: 0.9;
+        }
+
+        .site-link i {
+            font-size: 0.9rem;
+        }
+
+        .site-link span {
+            font-size: 0.9rem;
+        }
+
+        @media screen and (max-width: 768px) {
+            .site-link {
+                padding: 0.6rem 1rem;
+            }
+            
+            .site-link span {
+                display: none;
+            }
+        }
+
+        .date-select-btn {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background: var(--card-bg);
+            color: var(--accent);
             border: 1px solid var(--accent);
+            padding: 8px 35px 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 700;
+            font-family: 'DM Sans', sans-serif;
+            min-width: 150px;
+            transition: all 0.3s ease;
+        }
+
+        .date-select-wrapper {
+            position: relative;
+        }
+
+        .date-select-wrapper::after {
+            content: '\f107';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .date-select-btn:hover {
             background: rgba(255, 77, 77, 0.1);
         }
 
-        .home-btn:hover {
-            background: rgba(255, 77, 77, 0.2);
-            transform: translateY(-2px);
+        .date-select-btn option {
+            background: var(--card-bg);
+            color: var(--text);
+            padding: 10px;
+            font-weight: 500;
+        }
+
+        .date-navigation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .date-nav {
+            background: none;
+            border: none;
+            color: #00ff88;  /* Il verde che stavi usando */
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .date-display {
+            position: relative;
+        }
+
+        .date-select {
+            appearance: none;
+            -webkit-appearance: none;
+            background: none;
+            border: none;
+            color: #FF4D4D;  /* Il rosso del tuo tema */
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 8px 25px 8px 10px;
+            cursor: pointer;
+            text-align: center;
+            min-width: 180px;
+        }
+
+        .date-display::after {
+            content: '\f107';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            color: #FF4D4D;
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .date-select option {
+            background: var(--card-bg);
+            color: var(--text);
+            padding: 10px;
         }
     </style>
+    <!-- Firebase App -->
+    <script type="module">
+        import { db } from './js/firebase-config.js';
+        import { collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        async function loadDashboardAppointments(selectedDate = null) {
+            try {
+                console.log('Inizio caricamento appuntamenti...');
+                
+                // Formatta la data nel formato italiano
+                let searchDate;
+                if (selectedDate) {
+                    searchDate = new Date(selectedDate);
+                } else {
+                    searchDate = new Date();
+                }
+                
+                const giorni = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+                const mesi = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 
+                             'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+                
+                // Formatta la data come "Sabato 16 novembre 2024"
+                const dateString = `${giorni[searchDate.getDay()]} ${searchDate.getDate()} ${mesi[searchDate.getMonth()]} ${searchDate.getFullYear()}`;
+                console.log('Data ricerca:', dateString);
+
+                // Query al database
+                const bookingsRef = collection(db, 'bookings');
+                const q = query(bookingsRef, where('date', '==', dateString));
+                const snapshot = await getDocs(q);
+                
+                console.log('Query eseguita, documenti trovati:', snapshot.size);
+
+                const morningContainer = document.getElementById('morningAppointments');
+                const afternoonContainer = document.getElementById('afternoonAppointments');
+
+                let morningHTML = '';
+                let afternoonHTML = '';
+
+                snapshot.forEach(doc => {
+                    const booking = doc.data();
+                    console.log('Processando appuntamento:', booking);
+
+                    const appointmentHTML = `
+                        <div class="appointment-card">
+                            <div class="time">
+                                <i class="far fa-clock"></i>
+                                ${booking.time}
+                            </div>
+                            <div class="client-info">
+                                <h3>${booking.name}</h3>
+                                <p>
+                                    <i class="fas fa-cut"></i>
+                                    ${booking.service}
+                                </p>
+                                <p>
+                                    <i class="fas fa-phone"></i>
+                                    ${booking.phone || 'N/A'}
+                                </p>
+                            </div>
+                        </div>
+                    `;
+
+                    const hour = parseInt(booking.time.split(':')[0]);
+                    if (hour < 13) {
+                        morningHTML += appointmentHTML;
+                    } else {
+                        afternoonHTML += appointmentHTML;
+                    }
+                });
+
+                morningContainer.innerHTML = morningHTML || '<p class="no-appointments">Nessun appuntamento</p>';
+                afternoonContainer.innerHTML = afternoonHTML || '<p class="no-appointments">Nessun appuntamento</p>';
+
+            } catch (error) {
+                console.error('Errore nel caricamento degli appuntamenti:', error);
+                console.error('Dettagli errore:', error.message);
+            }
+        }
+
+        // Esposi la funzione globalmente
+        window.loadDashboardAppointments = loadDashboardAppointments;
+
+        // Carica gli appuntamenti all'avvio
+        document.addEventListener('DOMContentLoaded', loadDashboardAppointments);
+    </script>
 </head>
 <body>
     <div class="container">
         <nav class="navbar">
-            <div class="nav-item" data-section="dashboard">
-                <i class="fas fa-chart-line"></i>
+            <div class="nav-item active" data-section="dashboard">
+                <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </div>
             <div class="nav-item" data-section="appointments">
-                <i class="fas fa-calendar-alt"></i>
+                <i class="fas fa-calendar"></i>
                 <span>Appuntamenti</span>
             </div>
             <div class="nav-item" data-section="clients">
                 <i class="fas fa-users"></i>
                 <span>Clienti</span>
             </div>
-            <a href="index.html" class="nav-item home-btn">
-                <i class="fas fa-home"></i>
+            <div class="nav-item" data-section="statistics">
+                <i class="fas fa-chart-bar"></i>
+                <span>Statistiche</span>
+            </div>
+            <a href="index.html" class="site-link">
+                <i class="fas fa-arrow-left"></i>
                 <span>Torna al Sito</span>
             </a>
         </nav>
@@ -1037,25 +1250,39 @@
                 </div>
                 
                 <!-- Aggiungi il selettore di data -->
-                <div class="date-selector">
-                    <button class="date-nav" onclick="changeDate(-1)">
+                <div class="date-navigation">
+                    <button class="date-nav left" onclick="changeDate(-1)">
                         <i class="fas fa-chevron-left"></i>
                     </button>
+                    
                     <div class="date-display">
-                        <select id="daySelector" onchange="updateDate()">
+                        <input type="date" id="datePicker" class="date-picker" onchange="handleDatePicker(this.value)">
+                        <select class="date-select" onchange="handleDateSelection(this.value)">
                             <option value="today">Oggi</option>
                             <option value="tomorrow">Domani</option>
                             <option value="custom">Scegli data...</option>
                         </select>
-                        <input type="date" id="dateSelector" onchange="loadDashboardAppointments()" style="display: none;">
                     </div>
-                    <button class="date-nav" onclick="changeDate(1)">
+                    
+                    <button class="date-nav right" onclick="changeDate(1)">
                         <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
 
-                <div class="appointments-list">
-                    <!-- Gli appuntamenti verranno caricati qui -->
+                <div class="time-slots">
+                    <div class="time-period morning">
+                        <h3><i class="fas fa-sun"></i> Mattina</h3>
+                        <div id="morningAppointments" class="appointments-list">
+                            <!-- Gli appuntamenti della mattina verranno caricati qui -->
+                        </div>
+                    </div>
+                    
+                    <div class="time-period afternoon">
+                        <h3><i class="fas fa-moon"></i> Pomeriggio</h3>
+                        <div id="afternoonAppointments" class="appointments-list">
+                            <!-- Gli appuntamenti del pomeriggio verranno caricati qui -->
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -1144,7 +1371,7 @@
     <!-- Aggiungi questi script prima della chiusura del body -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="js/statistics.js"></script>
+    <script type="module" src="js/statistics.js"></script>
     <script>
     // Configurazione Firebase
     const firebaseConfig = {
@@ -1823,27 +2050,17 @@
         const daySelector = document.getElementById('daySelector');
         const dateSelector = document.getElementById('dateSelector');
         
-        switch(daySelector.value) {
-            case 'today':
-                currentDate = new Date();
-                dateSelector.style.display = 'none';
-                break;
-            case 'tomorrow':
-                currentDate = new Date();
-                currentDate.setDate(currentDate.getDate() + 1);
-                dateSelector.style.display = 'none';
-                break;
-            case 'custom':
-                dateSelector.style.display = 'block';
-                return;
+        if (daySelector.value === 'custom') {
+            dateSelector.style.display = 'block';
+            return;
         }
         
         dateSelector.valueAsDate = currentDate;
         loadDashboardAppointments();
     }
 
-    function changeDate(days) {
-        currentDate.setDate(currentDate.getDate() + days);
+    function changeDate(direction) {
+        currentDate.setDate(currentDate.getDate() + direction);
         document.getElementById('dateSelector').valueAsDate = currentDate;
         document.getElementById('daySelector').value = 'custom';
         loadDashboardAppointments();
@@ -1851,85 +2068,88 @@
 
     async function loadDashboardAppointments() {
         try {
-            const appointmentsSection = document.getElementById('appointments');
-            if (!appointmentsSection || !appointmentsSection.classList.contains('active')) {
-                return;
-            }
-
             const selectedDate = document.getElementById('dateSelector')?.valueAsDate || currentDate;
             const dateString = formatDate(selectedDate);
             
-            const bookingsRef = db.collection('bookings')
-                .where('date', '==', dateString);
+            const bookingsRef = collection(db, 'bookings');
+            const q = query(bookingsRef, where('date', '==', dateString));
+            const snapshot = await getDocs(q);
 
-            const snapshot = await bookingsRef.get();
-            const appointmentsList = appointmentsSection.querySelector('.appointments-list');
+            const morningContainer = document.getElementById('morningAppointments');
+            const afternoonContainer = document.getElementById('afternoonAppointments');
 
-            if (!appointmentsList) {
+            let morningHTML = '';
+            let afternoonHTML = '';
+
+            if (snapshot.empty) {
+                const noAppointmentsHTML = '<p class="no-appointments">Nessun appuntamento</p>';
+                morningContainer.innerHTML = noAppointmentsHTML;
+                afternoonContainer.innerHTML = noAppointmentsHTML;
                 return;
             }
 
-            let appointmentsHTML = '';
+            const appointments = [];
+            snapshot.forEach(doc => {
+                appointments.push({
+                    id: doc.id,
+                    ...doc.data()
+                });
+            });
 
-            if (snapshot.empty) {
-                appointmentsHTML = `
-                    <div class="no-appointments">
-                        <p>Nessun appuntamento per ${dateString}</p>
+            // Ordina gli appuntamenti per orario
+            appointments.sort((a, b) => a.time.localeCompare(b.time));
+
+            appointments.forEach(booking => {
+                const appointmentHTML = `
+                    <div class="appointment-card">
+                        <div class="time">
+                            <i class="far fa-clock"></i>
+                            ${booking.time}
+                        </div>
+                        <div class="client-info">
+                            <h3>${booking.name}</h3>
+                            <p>
+                                <i class="fas fa-cut"></i>
+                                ${booking.service}
+                            </p>
+                        </div>
                     </div>
                 `;
-            } else {
-                const appointments = [];
-                snapshot.forEach(doc => {
-                    appointments.push(doc.data());
-                });
-                
-                appointments.sort((a, b) => a.time.localeCompare(b.time));
 
-                appointments.forEach(booking => {
-                    appointmentsHTML += `
-                        <div class="appointment-card">
-                            <div class="time">${booking.time}</div>
-                            <div class="client-info">
-                                <h3>${booking.name}</h3>
-                                <p>${booking.service}</p>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
+                // Dividi tra mattina e pomeriggio
+                const hour = parseInt(booking.time.split(':')[0]);
+                if (hour < 13) {
+                    morningHTML += appointmentHTML;
+                } else {
+                    afternoonHTML += appointmentHTML;
+                }
+            });
 
-            appointmentsList.innerHTML = appointmentsHTML;
+            // Aggiorna il DOM
+            morningContainer.innerHTML = morningHTML || '<p class="no-appointments">Nessun appuntamento</p>';
+            afternoonContainer.innerHTML = afternoonHTML || '<p class="no-appointments">Nessun appuntamento</p>';
 
         } catch (error) {
             console.error('Errore nel caricamento degli appuntamenti:', error);
+            console.error('Stack trace:', error.stack);
         }
     }
 
-    // Inizializza quando si cambia sezione
-    function initializeAppointments() {
+    // Assicurati che la funzione venga chiamata quando necessario
+    document.addEventListener('DOMContentLoaded', () => {
         const appointmentsSection = document.getElementById('appointments');
-        const dateSelector = document.getElementById('dateSelector');
-        
-        if (appointmentsSection && dateSelector) {
-            dateSelector.valueAsDate = currentDate;
+        if (appointmentsSection) {
             loadDashboardAppointments();
         }
-    }
-
-    // Gestione del cambio sezione
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', () => {
-            if (item.getAttribute('data-section') === 'appointments') {
-                setTimeout(initializeAppointments, 100); // Piccolo delay per assicurarsi che la sezione sia attiva
-            }
-        });
     });
 
-    // Inizializzazione al caricamento della pagina
-    document.addEventListener('DOMContentLoaded', () => {
-        if (window.location.hash === '#appointments') {
-            initializeAppointments();
-        }
+    // Aggiorna quando si cambia sezione
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            if (item.dataset.section === 'appointments') {
+                loadDashboardAppointments();
+            }
+        });
     });
 
     // Gestione menu mobile
@@ -1959,6 +2179,310 @@
                 }
             });
         }
+    });
+
+    // Funzione per gestire il click su "Scegli data..."
+    function showDatePicker() {
+        const dateInput = document.createElement('input');
+        dateInput.type = 'date';
+        dateInput.id = 'customDatePicker';
+        dateInput.className = 'custom-date-picker';
+        
+        // Imposta la data minima a oggi
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.min = today;
+        
+        // Sostituisci il selettore con l'input date
+        const dateSelector = document.querySelector('.date-display');
+        dateSelector.innerHTML = '';
+        dateSelector.appendChild(dateInput);
+        
+        // Mostra il picker
+        dateInput.showPicker();
+        
+        // Aggiungi event listener per il cambio data
+        dateInput.addEventListener('change', function() {
+            loadDashboardAppointments(this.value);
+        });
+    }
+
+    // Funzione aggiornata per caricare gli appuntamenti
+    async function loadDashboardAppointments(selectedDate = null) {
+        try {
+            let searchDate;
+            if (selectedDate) {
+                searchDate = new Date(selectedDate);
+            } else {
+                searchDate = new Date();
+            }
+            
+            // Aggiungi un giorno per compensare il timezone
+            searchDate.setDate(searchDate.getDate() + 1);
+            
+            const giorni = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+            const mesi = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 
+                         'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+            
+            const dateString = `${giorni[searchDate.getDay()]} ${searchDate.getDate()} ${mesi[searchDate.getMonth()]} ${searchDate.getFullYear()}`;
+            console.log('Data ricerca:', dateString);
+
+            // Query al database
+            const bookingsRef = collection(db, 'bookings');
+            const q = query(bookingsRef, where('date', '==', dateString));
+            const snapshot = await getDocs(q);
+            
+            console.log('Query eseguita, documenti trovati:', snapshot.size);
+
+            // Recupera i container
+            const morningContainer = document.getElementById('morningAppointments');
+            const afternoonContainer = document.getElementById('afternoonAppointments');
+
+            if (!morningContainer || !afternoonContainer) {
+                console.error('Container non trovati nel DOM');
+                return;
+            }
+
+            let morningHTML = '';
+            let afternoonHTML = '';
+
+            // Processa i risultati
+            snapshot.forEach(doc => {
+                const booking = doc.data();
+                console.log('Processando appuntamento:', booking);
+
+                const appointmentHTML = `
+                    <div class="appointment-card" data-id="${doc.id}">
+                        <div class="time">
+                            <i class="far fa-clock"></i>
+                            ${booking.time}
+                        </div>
+                        <div class="client-info">
+                            <h3>${booking.name}</h3>
+                            <p>
+                                <i class="fas fa-cut"></i>
+                                ${booking.service}
+                            </p>
+                            <p>
+                                <i class="fas fa-phone"></i>
+                                ${booking.phone || 'N/A'}
+                            </p>
+                        </div>
+                        <div class="actions">
+                            <button onclick="deleteAppointment('${doc.id}')" class="delete-btn">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // Dividi tra mattina e pomeriggio
+                const hour = parseInt(booking.time.split(':')[0]);
+                if (hour < 13) {
+                    morningHTML += appointmentHTML;
+                } else {
+                    afternoonHTML += appointmentHTML;
+                }
+            });
+
+            // Aggiorna il DOM
+            morningContainer.innerHTML = morningHTML || '<p class="no-appointments">Nessun appuntamento</p>';
+            afternoonContainer.innerHTML = afternoonHTML || '<p class="no-appointments">Nessun appuntamento</p>';
+
+        } catch (error) {
+            console.error('Errore nel caricamento degli appuntamenti:', error);
+            console.error('Stack trace:', error.stack);
+        }
+    }
+
+    // Funzione per cambiare data con le frecce
+    function changeDate(direction) {
+        try {
+            // Ottieni la data corrente dal database o usa oggi come default
+            let currentDate = new Date();
+            const select = document.querySelector('.date-select-btn');
+            
+            // Aggiungi o sottrai giorni
+            currentDate.setDate(currentDate.getDate() + direction);
+            
+            // Aggiorna la select a "Oggi" se la data è oggi, "Domani" se è domani
+            const today = new Date();
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            if (currentDate.toDateString() === today.toDateString()) {
+                select.value = 'today';
+            } else if (currentDate.toDateString() === tomorrow.toDateString()) {
+                select.value = 'tomorrow';
+            } else {
+                select.value = 'custom';
+            }
+            
+            updateDateDisplay(currentDate);
+            loadDashboardAppointments(currentDate);
+            
+        } catch (error) {
+            console.error('Errore nel cambio data:', error);
+        }
+    }
+
+    // Funzione per gestire la selezione della data
+    function handleDateSelection(value) {
+        try {
+            let selectedDate = new Date();
+            const select = document.querySelector('.date-select-btn');
+            
+            switch(value) {
+                case 'today':
+                    // Resetta alla data di oggi
+                    selectedDate = new Date();
+                    break;
+                    
+                case 'tomorrow':
+                    // Imposta la data a domani
+                    selectedDate = new Date();
+                    selectedDate.setDate(selectedDate.getDate() + 1);
+                    break;
+                    
+                case 'custom':
+                    // Apri il date picker nativo
+                    const dateInput = document.createElement('input');
+                    dateInput.type = 'date';
+                    dateInput.style.display = 'none';
+                    document.body.appendChild(dateInput);
+                    
+                    dateInput.addEventListener('change', function() {
+                        selectedDate = new Date(this.value);
+                        updateDateDisplay(selectedDate);
+                        loadDashboardAppointments(selectedDate);
+                        document.body.removeChild(this);
+                        // Resetta la select a "Oggi" dopo la selezione
+                        select.value = 'today';
+                    });
+                    
+                    dateInput.showPicker();
+                    return;
+            }
+            
+            updateDateDisplay(selectedDate);
+            loadDashboardAppointments(selectedDate);
+            
+        } catch (error) {
+            console.error('Errore nella selezione della data:', error);
+        }
+    }
+
+    // Funzione per aggiornare il display della data
+    function updateDateDisplay(date) {
+        const giorni = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+        const mesi = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 
+                     'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+        
+        const dateString = `${giorni[date.getDay()]} ${date.getDate()} ${mesi[date.getMonth()]} ${date.getFullYear()}`;
+        
+        const select = document.querySelector('.date-select-btn');
+        if (select) {
+            // Trova l'opzione corrente e aggiorna il suo testo
+            const currentOption = select.options[select.selectedIndex];
+            if (currentOption.value === 'today') {
+                currentOption.text = 'Oggi';
+            } else if (currentOption.value === 'tomorrow') {
+                currentOption.text = 'Domani';
+            } else {
+                currentOption.text = dateString;
+            }
+        }
+    }
+
+    // Inizializza la data all'avvio
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        updateDateDisplay(today);
+        loadDashboardAppointments(today);
+    });
+
+    let currentDisplayDate = new Date();
+
+    function changeDate(direction) {
+        try {
+            // Aggiorna la data corrente
+            currentDisplayDate.setDate(currentDisplayDate.getDate() + direction);
+            
+            // Formatta la data
+            const giorni = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+            const mesi = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 
+                         'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+            
+            const dateString = `${giorni[currentDisplayDate.getDay()]} ${currentDisplayDate.getDate()} ${mesi[currentDisplayDate.getMonth()]} ${currentDisplayDate.getFullYear()}`;
+            
+            // Aggiorna la select
+            const select = document.querySelector('.date-select');
+            if (select) {
+                const today = new Date();
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                
+                if (currentDisplayDate.toDateString() === today.toDateString()) {
+                    select.value = 'today';
+                } else if (currentDisplayDate.toDateString() === tomorrow.toDateString()) {
+                    select.value = 'tomorrow';
+                } else {
+                    select.value = 'custom';
+                    const customOption = select.querySelector('option[value="custom"]');
+                    if (customOption) {
+                        customOption.text = dateString;
+                    }
+                }
+            }
+            
+            loadDashboardAppointments(currentDisplayDate);
+            
+        } catch (error) {
+            console.error('Errore nel cambio data:', error);
+        }
+    }
+
+    function handleDateSelection(value) {
+        try {
+            switch(value) {
+                case 'today':
+                    currentDisplayDate = new Date();
+                    break;
+                    
+                case 'tomorrow':
+                    currentDisplayDate = new Date();
+                    currentDisplayDate.setDate(currentDisplayDate.getDate() + 1);
+                    break;
+                    
+                case 'custom':
+                    const dateInput = document.createElement('input');
+                    dateInput.type = 'date';
+                    dateInput.style.display = 'none';
+                    document.body.appendChild(dateInput);
+                    
+                    dateInput.addEventListener('change', function() {
+                        currentDisplayDate = new Date(this.value);
+                        changeDate(0); // Aggiorna il display senza cambiare data
+                        document.body.removeChild(this);
+                    });
+                    
+                    dateInput.showPicker();
+                    return;
+            }
+            
+            changeDate(0); // Aggiorna il display senza cambiare data
+            
+        } catch (error) {
+            console.error('Errore nella selezione della data:', error);
+        }
+    }
+
+    // Inizializzazione
+    document.addEventListener('DOMContentLoaded', () => {
+        const select = document.querySelector('.date-select');
+        if (select) {
+            select.value = 'today';
+        }
+        loadDashboardAppointments(currentDisplayDate);
     });
     </script>
 </body>

@@ -347,34 +347,26 @@
                             </div>
                         </div>
 
-                        <form class="details-form" id="details-form">
+                        <div class="personal-details">
+                            <h4>Dati Personali</h4>
                             <div class="form-group">
                                 <input type="text" 
                                        id="booking-name" 
-                                       name="name" 
-                                       required 
-                                       placeholder="Nome e Cognome"
-                                       pattern="[A-Za-zÀ-ÿ\s]+" 
-                                       title="Inserisci solo lettere"
-                                       onkeypress="return /[A-Za-zÀ-ÿ\s]/i.test(event.key)">
+                                       placeholder="Nome e Cognome" 
+                                       required>
                             </div>
-                            
                             <div class="form-group">
                                 <input type="tel" 
                                        id="booking-phone" 
-                                       name="phone" 
-                                       required 
-                                       placeholder="Telefono" 
-                                       pattern="[0-9]{10}" 
-                                       title="Inserisci un numero di telefono valido (10 cifre)"
-                                       maxlength="10">
+                                       placeholder="Numero di telefono" 
+                                       required>
                             </div>
-                            
-                            <div class="form-navigation">
-                                <button type="button" class="prev-step">Indietro</button>
-                                <button type="submit" class="confirm-booking">Conferma Prenotazione</button>
-                            </div>
-                        </form>
+                        </div>
+
+                        <div class="form-navigation">
+                            <button type="button" class="prev-step">Indietro</button>
+                            <button type="submit" class="confirm-booking">Conferma Prenotazione</button>
+                        </div>
                     </div>
                 </div>
             </div>

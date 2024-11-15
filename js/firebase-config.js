@@ -59,7 +59,6 @@ async function saveAppointment(appointmentData) {
             ...appointmentData,
             createdAt: new Date().toISOString()
         });
-        console.log('Appuntamento salvato con ID:', docRef.id);
         return docRef.id;
     } catch (error) {
         console.error('Errore nel salvare l\'appuntamento:', error);
